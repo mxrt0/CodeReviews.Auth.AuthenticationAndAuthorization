@@ -1,0 +1,69 @@
+﻿@using CourseHub.ViewModels
+@model ErrorViewModel
+
+@{
+    ViewData["Title"] = Model.Title ?? "Oops! Something went wrong";
+}
+
+<div class="error-page-container">
+    <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <h1 class="error-title">@Model.Title</h1>
+        <p class="error-message">@Model.Message</p>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary error-btn">Go Back Home</a>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .error-page-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            padding: 2rem;
+        }
+
+        .error-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            padding: 3rem 2rem;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #e63946;
+        }
+
+        .error-message {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: #555555;
+        }
+
+        .error-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+            .error-btn:hover {
+                background-color: #457b9d;
+                color: white;
+            }
+    </style>
+}

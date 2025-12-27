@@ -1,0 +1,353 @@
+﻿@using CourseHub.ViewModels
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Http
+@model AllCoursesViewModel
+@{
+    ViewData["Title"] = "All Courses";
+}
+
+@if (TempData["InfoMessage"] is string msg)
+{
+    <div class="alert alert-info text-center">
+        @msg
+    </div>
+}
+
+@if(!Model.ShowOnlyMyEnrolled && !Model.ShowOnlyMyCreated)
+{
+    <h1 class="text-3xl font-bold mb-6 text-center">Explore Courses</h1>
+    <p class="text-center mb-8 text-gray-700">
+        Browse and enroll in available courses.
+    </p>
+}
+else if (Model.ShowOnlyMyEnrolled)
+{
+    <h1 class="text-3xl font-bold mb-6 text-center">Your Enrollments</h1>
+    <p class="text-center mb-8 text-gray-700">
+        Review the courses you are enrolled in.
+    </p>
+}
+else
+{
+    <h1 class="text-3xl font-bold mb-6 text-center">Your Courses</h1>
+    <p class="text-center mb-8 text-gray-700">
+        Manage your courses.
+    </p>
+}
+
+    
+
+    <form method="get" class="d-flex gap-3 filter-form justify-content-center">
+        <select name="sort" class="sort-dropdown" onchange="this.form.submit()">
+            <option value="">Sort By</option>
+            @if (Model.Sort == "newest")
+            {
+                <option value="newest" selected>Newest First</option>
+                <option value="oldest">Oldest First</option>
+               
+                    <option value="recent">Recently Completed</option>
+                
+            }
+            else if (Model.Sort == "oldest")
+            {
+                <option value="newest">Newest First</option>
+                <option value="oldest" selected>Oldest First</option>
+              
+                    <option value="recent">Recently Completed</option>
+                
+            }
+            else
+            {
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                
+                    <option value="recent" selected>Recently Completed</option>
+                
+            }
+        </select>
+        <input type="text"
+               name="search"
+               value="@Model.SearchQuery"
+               placeholder="Search courses..."
+               class="filter-input" 
+               />
+      
+        @if (!Model.ShowOnlyMyEnrolled && !Model.ShowOnlyMyCreated)
+        {
+            <select name="instructorName" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Instructors</option>
+                @foreach (var instructor in Model.Instructors)
+                {
+                    <option value="@instructor.DisplayName"
+                            selected="@(Model.SelectedInstructorId == instructor.Id)">
+                        @instructor.DisplayName
+                    </option>
+                }
+            </select>
+        }
+
+        @if (Model.ShowOnlyMyEnrolled)
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       id="inProgressFilter"
+                       name="showInProgressOnly"
+                       value="true"
+                       onchange="this.form.submit()"
+                       @(Model.ShowInProgressOnly ? "checked" : "")>
+                <label class="form-check-label" for="inProgressFilter">
+                    In-Progress Only
+                </label>
+            </div>
+        }
+            
+        @if (Model.ShowOnlyMyCreated)
+        {
+            <input type="hidden" name="myCreated" value="true" />
+            <a asp-controller="Courses"
+               asp-action="AllCourses"
+               asp-route-myCreated="true"
+               class="clear-btn">
+                Clear Filters
+            </a>
+        }
+        else if (Model.ShowOnlyMyEnrolled)
+        {
+            <input type="hidden" name="myEnrolled" value="true" />
+            <a asp-controller="Courses"
+               asp-action="AllCourses"
+               asp-route-myEnrolled="true"
+               class="clear-btn">
+                Clear Filters
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Courses"
+               asp-action="AllCourses"
+               class="clear-btn">
+                Clear Filters
+            </a>
+        }       
+    </form>
+@if (Model.Courses.Any())
+{
+    <div class="d-flex flex-wrap justify-content-center gap-4">
+        @foreach (var course in Model.Courses)
+        {
+            <div class="rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 course-wrapper">
+                <div class="p-4 course-card">
+                    <div class="course-content">
+                        <h3 class="text-xl font-bold mb-2">@course.Title</h3>
+                        <p class="mb-2">@course.Description</p>                    
+                        @if (course.Instructor is not null && !Model.ShowOnlyMyCreated)
+                        {
+                            <p class="course-meta text-sm text-gray-500 mb-1">Instructor: @course.Instructor?.DisplayName</p>
+                        }
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (!Model.ShowOnlyMyEnrolled && course.Enrollments.Any(e => e.StudentId == User.FindFirstValue(ClaimTypes.NameIdentifier)))  
+                        {
+                            <span class="enrolled-badge">
+                                Already Enrolled
+                            </span>
+                        }
+                        else if (!Model.ShowOnlyMyEnrolled 
+                        && !Model.ShowOnlyMyCreated)
+                        {
+                            <form asp-controller="Courses" asp-action="Enroll" asp-route-id="@course.Id" method="get">
+                                <button class="btn btn-success px-3 py-2 bg-green-500 text-white rounded-lg enroll-btn">
+                                    Enroll
+                                </button>
+                            </form>
+                        }
+                        @if (Model.ShowOnlyMyEnrolled)
+                        {
+                            @if (course.Enrollments.Any(e => e.StudentId == User.FindFirstValue(ClaimTypes.NameIdentifier) && !e.IsCompleted))
+                            {
+                                <button type="button"
+                                        class="btn btn-sm unenroll-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#unenrollModal-@course.Id">
+                                    Unenroll
+                                </button>
+                                <form asp-action="MarkCompleted"
+                                      asp-controller="Courses"
+                                      asp-route-id="@course.Id"
+                                      method="post">
+                                    <button class="btn btn-outline-success btn-sm complete-btn">
+                                        ✓ Mark as completed
+                                    </button>
+                                </form>
+
+                            }
+                            else
+                            {
+                                <span class="completed-badge">
+                                    ✔ Completed
+                                </span>
+                            }
+                        }
+
+                        @if (Model.ShowOnlyMyCreated)
+                        {
+                            <a class="btn btn-secondary" asp-controller="Courses" 
+                            asp-action="Edit" asp-route-id="@course.Id">Edit</a>
+                            <button type="button"
+                                    class="btn btn-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteCourseModal-@course.Id">
+                                Delete
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Model.ShowOnlyMyEnrolled)
+        {
+            foreach (var course in Model.Courses)
+            {
+                <div class="modal fade"
+                     id="unenrollModal-@course.Id"
+                     tabindex="-1"
+                     aria-hidden="true">
+
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirm Unenroll</h5>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body text-center">
+                                <p>Are you sure you want to unenroll from:</p>
+                                <strong>@course.Title</strong>
+                            </div>
+
+                            <div class="modal-footer justify-content-center">
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+
+                                <form asp-controller="Courses"
+                                      asp-action="Unenroll"
+                                      asp-route-id="@course.Id"
+                                      method="post">
+                                    <button type="submit"
+                                            class="btn btn-danger">
+                                        Unenroll
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        @if (Model.ShowOnlyMyCreated)
+        {
+            foreach (var course in Model.Courses)
+            {
+                <div class="modal fade"
+                     id="deleteCourseModal-@course.Id"
+                     tabindex="-1"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content delete-modal">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title text-danger">
+                                    ⚠ Delete Course
+                                </h5>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal">
+                                </button>
+                            </div>
+
+                            <div class="modal-body text-center">
+                                <p class="fw-semibold mb-2">
+                                    Are you sure you want to delete
+                                </p>
+
+                                <h6 class="delete-course-title">
+                                    @course.Title
+                                </h6>
+
+                                <p class="text-muted small mt-2">
+                                    This action cannot be undone.
+                                </p>
+                            </div>
+
+                            <div class="modal-footer justify-content-center gap-3">
+                                <button type="button"
+                                        class="btn btn-light px-4"
+                                        data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+
+                                <form asp-controller="Courses"
+                                      asp-action="Delete"
+                                      asp-route-id="@course.Id"
+                                      method="post">
+                                    <button type="submit"
+                                            class="btn btn-danger px-4">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+}
+else
+{
+    <p class="text-center text-gray-500 mt-3">No courses found.</p>
+}
+
+<script>
+    const alertMessage = document.querySelector('.alert');
+    if (alertMessage) {
+        setTimeout(() => {
+            alertMessage.classList.add('hidden');
+            setTimeout(() => alertMessage.style.display = 'none', 400);
+        }, 2800);
+    }
+
+        document.addEventListener('DOMContentLoaded', () => {
+        const searchBar = document.querySelector('.filter-input');
+        const params = new URLSearchParams(window.location.search);
+        if (searchBar && params.has('search') && params.get('search') !== '') {
+            searchBar.focus();
+            searchBar.setSelectionRange(
+            searchBar.value.length,
+            searchBar.value.length
+         );
+        }
+        const filterForm = document.querySelector('.filter-form');
+
+        if (!searchBar || !filterForm) return;
+
+        let debounceTimeout;
+
+        searchBar.addEventListener('input', () => {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                filterForm.submit();
+            }, 350);
+        });
+    });
+
+</script>
+

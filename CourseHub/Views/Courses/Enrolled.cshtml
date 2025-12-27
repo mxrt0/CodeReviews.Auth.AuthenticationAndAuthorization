@@ -1,0 +1,27 @@
+﻿@model Course
+@{
+    ViewData["Title"] = "Enrollment Successful";
+}
+
+
+<div class="enrolled-container text-center mt-5 p-4">
+    <h2 class="enrolled-header mb-4">🎉 Successfully Enrolled!</h2>
+    <p>You have enrolled in '@Model.Title'</p>
+</div>
+
+<p class="text-center mt-2 fw-bold" id="countdown">Redirecting in 3 seconds...</p>
+
+<script>
+    let seconds = 3;
+    const countdownEl = document.getElementById("countdown");
+
+    const interval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = `Redirecting in ${seconds} seconds...`;
+        if (seconds <= 0) {
+            clearInterval(interval);
+            window.location.href = '@Url.Action("Index", "Home")';
+        }
+    }, 1000);
+</script>
+

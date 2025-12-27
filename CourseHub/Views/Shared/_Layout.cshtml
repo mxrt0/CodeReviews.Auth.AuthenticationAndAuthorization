@@ -1,0 +1,106 @@
+﻿@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var user = await UserManager.GetUserAsync(User) ?? new ApplicationUser
+    {
+        DisplayName = "Unknown"
+    };
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CourseHub</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CourseHub.styles.css" asp-append-version="true" />
+    <link rel="icon" href="~/img/hero-icon.png" asp-append-version="true"/>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-custom shadow-sm fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">CourseHub</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <!-- Left nav -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Courses" asp-action="AllCourses">Browse Courses</a>
+                        </li>
+                                               
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Courses" asp-action="AllCourses"
+                                   asp-route-myEnrolled="true">My Enrollments</a>
+                            </li>
+                        }
+                        
+                        @if (User.IsInRole("Instructor"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Courses" asp-action="AllCourses"
+                                   asp-route-myCreated="true">My Courses</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-bold" style="color: #27ae60" asp-controller="Courses" asp-action="Create">
+                                    ➕ Create Course
+                                </a>
+                            </li>
+                        }
+                        
+                    </ul>
+
+                    <!-- Right nav -->
+                    <ul class="navbar-nav ms-auto d-flex align-items-end">
+                        @if (!User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item" >
+                                <span class="navbar-text fw-bolder align-self-center">
+                                    Hello, @user.DisplayName!
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                    <button class="btn btn-info btn-sm ms-3 align-self-center" style="padding-top: 2px;">Log Out</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container text-center">
+            &copy; 2025 - CourseHub
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

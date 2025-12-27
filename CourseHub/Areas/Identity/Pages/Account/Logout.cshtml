@@ -1,0 +1,22 @@
+﻿@page
+@model LogoutModel
+@{
+    ViewData["Title"] = "Logout";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card small">
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <form method="post">
+                <p>Are you sure you want to log out?</p>
+                <button type="submit" class="btn btn-danger w-100">Log Out</button>
+            </form>
+        }
+        else
+        {
+            <p class="text-center fw-bold">You have successfully logged out.</p>
+            <a asp-page="/Account/Login" class="btn btn-primary w-100">Log Back In</a>
+        }
+    </div>
+</div>

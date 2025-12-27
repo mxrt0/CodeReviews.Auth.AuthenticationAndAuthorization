@@ -1,0 +1,27 @@
+﻿@using CourseHub.ViewModels
+@model CreateCourseViewModel
+
+<div class="create-course-wrapper">
+    <h1 class="create-title">Create a New Course</h1>
+
+    <form asp-action="Create" method="post" class="create-course-form shadow-lg">
+
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label fw-bold">Course Title</label>
+            <input asp-for="Title" class="form-control form-control-lg" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label fw-bold">Course Description</label>
+            <textarea asp-for="Description" rows="5" class="form-control"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <button class="btn btn-primary create-submit-btn mt-3">
+            Create Course 🚀
+        </button>
+
+    </form>
+</div>
+

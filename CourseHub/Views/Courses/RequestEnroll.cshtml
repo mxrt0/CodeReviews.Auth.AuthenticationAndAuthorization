@@ -1,0 +1,28 @@
+﻿@model Course
+
+<div class="enroll-confirm-wrapper">
+    <div class="enroll-card">
+        <h1 class="enroll-title">Confirm Enrollment</h1>
+
+        <p class="enroll-subtitle">
+            You are about to enroll in:
+        </p>
+
+        <div class="course-info-box">
+            <h2 class="course-title text-black">@Model.Title</h2>
+            <p class="course-desc">@Model.Description</p>
+            <p class="course-instructor">
+                Instructor: @(Model.Instructor?.DisplayName ?? "N/A")
+            </p>
+        </div>
+
+        <form asp-action="EnrollConfirmed" asp-controller="Courses" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="confirm-enroll-btn">
+                ✔ Enroll Now
+            </button>
+        </form>
+
+        <a asp-action="Index" asp-controller="Home" class="cancel-link">Cancel</a>
+    </div>
+</div>
+
